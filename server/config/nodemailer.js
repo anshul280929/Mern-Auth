@@ -6,8 +6,9 @@ const transporter=nodemailer.createTransport({
     auth:
     {
         user: process.env.SMTP_USER,
-        password: process.env.SMTP_PASSWORD
+        pass: process.env.SMTP_PASSWORD
     }
+
 });
 
 export default transporter;

@@ -11,39 +11,45 @@ export const register = async (req, res) => {
   }
 
   try {
+    //Get user from the email
     const existingUser = await userModel.findOne({ email });
+    //Check if user exist or not
     if (existingUser) {
       return res.json({ success: false, message: "User already exists" });
     }
+    //Encrypt the password and save it
     const hashedPassword = await bcrypt.hash(password, 10);
+    //Create user and save it in the database
     const user = new userModel({
       name,
       email,
       password: hashedPassword,
     });
     await user.save();
-
+    //Generate token using jwt
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: '7d',
     }); 
+    //send the token to user in resposnse via cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     //Sending welcome email
     const mailOptions={
-        from:process.env.SENDER_EMAIL,
-        to:email,
-        subject:'Welcome to the Website',
-        text: `Welcome to the Website, Your email has been created with email id:${email}`
+        from: process.env.SENDER_EMAIL,
+        to: email,
+  subject: "Welcome to the Website",
+  text: `Hello ${name}, welcome! Your account has been created with email: ${email}`,
+  html: `<p>Hello <b>${name}</b>,</p><p>Welcome to our website! Your account has been created with <i>${email}</i>.</p>`,
     }
 
     await transporter.sendMail(mailOptions);
 
-    return res.json({ success: true });
+    return res.json({ success: true , message: "User registered successfully"});
   } catch (error) {
     res.json({ success: false, message: error.message });
   }
@@ -212,7 +218,7 @@ export const passwordRestOtp=async(req,res)=>{
 //Rest user password using otp
 export const resetPassword=async(req,res)=>{
     const {email,otp,newPassword}= req.body;
-    if(!email||!otp||!newPassword){
+    if(!email || !otp || !newPassword){
         return res.json({success:false, message:'Missing details'});
     }
     try{
@@ -228,7 +234,7 @@ export const resetPassword=async(req,res)=>{
         }
         const hashedPassword=await bcrypt.hash(newPassword,10);
 
-        user.password(hashedPassword);
+        user.password=hashedPassword;
         user.resetOtp="";
         user.resetOtpExpireAt=0;
         await user.save();
