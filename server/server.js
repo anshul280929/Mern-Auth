@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 
 import connectDB from './config/monodb.js';
 import authRouter from './routes/authRouter.js'
+import userRouter from './routes/userRouter.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -17,5 +18,6 @@ app.use(cors({credentials: true}));
 //API ENDPOINTS
 app.get('/', (req, res) => res.send('Server is running fine!'));
 app.use('/api/auth',authRouter)
+app.use('/api/user',userRouter)
 
 app.listen(port, () => console.log(`Server is running on port ${port}`));
